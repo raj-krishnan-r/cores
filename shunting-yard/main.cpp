@@ -30,12 +30,39 @@ public:
         return top+1;
     }
 };
+class Queue
+{
+    int end = -1;
+    char operators[500];
+    public:
+    bool isEmpty(){
+        return (end<0);
+    }
+    void push(char c){
+        operators[++end]=c;
+    }
+    int size(){
+        return end;
+    }
+    char getIndexOf(int index)
+    {
+        return operators[index];
+    }
+    void print(){
+        int index = 0;
+        while(index<=end)
+        {
+            printf("%c",operators[index++]);
+        }
+    }};
 int getPrecedence(char);
-bool isOperator(char c);
+bool isOperator(char);
+void Execute(Queue);
 int main()
 {
+    Queue q;
     Stack stack;
-    std::string expression = "1+(2*3-1)-2";
+    std::string expression = "(4/2)";
     int k = 0;
     while (k < expression.length())
     {
@@ -62,7 +89,8 @@ int main()
                     {
                         if (stack.topItem() != '(')
                         {
-                            printf("%c", stack.pop());
+                            //printf("%c", stack.pop());
+                            q.push(stack.pop());
                         }
                         else
                         {
@@ -78,10 +106,14 @@ int main()
                     while (!stack.isEmpty())
                     {
                         //printf("top of stack %c \n inc opetator %c \n\n",stack.topItem(),expression[k]);
+                        //printf("\n%c will be compared with %c\n",stack.topItem(),expression[k]);
+                        //printf("\nPrecedence of incoming operators %d\n",getPrecedence(expression[k]));
+                        //printf("\nPrecedence of stack top operator %d\n",getPrecedence(stack.topItem()));
 
                         if ((getPrecedence(stack.topItem()) >= getPrecedence(expression[k]))&&(getPrecedence(expression[k])!=0)&&(getPrecedence(stack.topItem())!=0))
                         {
-                            printf("%c", stack.pop());
+                            //printf("%c", stack.pop());
+                            q.push(stack.pop());
                             //printf("Stack size is %d \n",stack.size());
                         }
                         else
@@ -90,7 +122,8 @@ int main()
                         }
                     }
                     //Then push it onto the stack
-                    //stack.push(expression[k]);
+                    stack.push(expression[k]);
+                    //printf("\n%c size : %d\n",stack.topItem(),stack.size());
                     ///printf("Stack size is %d \n",stack.size());
 
                 }
@@ -99,7 +132,8 @@ int main()
         else
         {
             //Print it
-            printf("%c", expression[k]);
+            //printf("%c", expression[k]);
+            q.push(expression[k]);
         }
         k++;
     }
@@ -107,9 +141,12 @@ int main()
     //if they are not '(' or ')'.
     while (!stack.isEmpty())
     {
-        printf("%c", (stack.pop()));
+        //printf("%c", (stack.pop()));
+        q.push(stack.pop());
         //printf("Stack size is %d \n",stack.size());
     }
+    q.print();
+    Execute(q);
     printf("\n");
 }
 bool isOperator(char c)
@@ -155,13 +192,67 @@ int getPrecedence(char op)
         break;
     case '-':
         precedence = 1;
+        break;
     case '*':
         precedence = 2;
+        break;
     case '/':
         precedence = 2;
+        break;
     default:
         precedence = 0;
         break;
     }
     return precedence;
+}
+
+
+
+
+
+void Execute(Queue temp){
+Stack operands;
+int index = 0;
+//temp.print();
+while(index<=temp.size())
+{
+    char token = temp.getIndexOf(index);
+    //printf("%c",token);
+    if(!isOperator(token))
+    {
+    //printf(" \n Pushed to %c",temp.getIndexOf(index));
+    operands.push(token);
+    }
+    else
+    {
+           int op1;
+           int op2;
+           char op01 = operands.pop();
+           char op02 = operands.pop();
+           op1 = op01 - '0';
+           op2 = op02 - '0';
+        if(token=='+')
+        {
+            char result = '0'+(op1+op2);
+            operands.push(result);
+        }
+        if(token=='-')
+        {
+            char result = '0'+(op1-op2);
+            operands.push(result);
+        }
+        if(token=='*')
+        {
+            char result = '0'+(op1*op2);
+            operands.push(result);
+        }
+        if(token=='/')
+        {
+            char result = '0'+(op1/op2);
+            operands.push(result);
+        }
+    }
+    index++;
+}
+printf("%c",operands.pop());
 }
